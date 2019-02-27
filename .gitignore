@@ -1,0 +1,4 @@
+.vscode/
+
+#Excutable files
+*.o
