@@ -105,6 +105,19 @@ class BMPImg:
         
     def rotate(self):
         print("--- rotate ---")
+        dataSize = self.getPxlNum() * self.getBytesPerPixel();
+        newData = int[]
+        n = 0
+
+        for i in range(1, self.header.Width):
+            for h un range(self.header.Height, 1):
+                tmpIdx = (h - 1) * header.Width + w - 1
+				newData[3 * n] = data[3 * tmpIdx]
+				newData[3 * n + 1] = data[3 * tmpIdx + 1]
+				newData[3 * n + 2] = data[3 * tmpIdx + 2]
+				n++
+        
+        data = newData
         #TODO
         
     def RGB2Y(self):
