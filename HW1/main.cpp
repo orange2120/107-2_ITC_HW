@@ -14,7 +14,7 @@ int main(int argc, char* argv[]) {
 	*/
 	
 	BMPImg imgrabbit("./img/rabbit.bmp");
-	imgrabbit.printHeader();
+	//imgrabbit.printHeader();
 	imgrabbit.rotate();
 	imgrabbit.storePic("./output/rabbit_ans.bmp");
 

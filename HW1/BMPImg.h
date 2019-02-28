@@ -169,13 +169,9 @@ public:
 			for (int h = header.Height; h > 0; h--)
 			{
 				tmpIdx = (h - 1) * header.Width + w - 1;
-
-				//cout << "(" << w << "," << h <<") IDX: " << tmpIdx << ", n: " << n << endl;
-				for (uint8_t k = 0; k < 3; k++)
-				{
-					newData[3 * n + k] = data[3 * tmpIdx + k];
-					//cout << 3 * tmpIdx + k<< "->" << 3 * n + k << endl;
-				}
+				newData[3 * n] = data[3 * tmpIdx];
+				newData[3 * n + 1] = data[3 * tmpIdx + 1];
+				newData[3 * n + 2] = data[3 * tmpIdx + 2];
 				n++;
 			}
 		}
@@ -190,46 +186,46 @@ public:
 	}
 
 	bool RGB2Y() {
-		unsigned char y = 0;
 		for (uint32_t i = 0, n = getPxlNum() * getBytesPerPixel(); i < n; i += 3)
-		{
-			y = 0.3 * data[i] + 0.59 * data[i + 1] + 0.11 * data[i + 2];
-			data[i + 1] = data[i + 2] = data[i + 3] = y;
-		}
+			data[i + 1] = data[i + 2] = data[i + 3] = 0.3 * data[i] + 0.59 * data[i + 1] + 0.11 * data[i + 2];
 		return true;
 	}
 
 	bool PrewittFilter() {
-		
 		uint32_t dataSize = getPxlNum() * getBytesPerPixel();
 		newData = new unsigned char[dataSize];
-		uint16_t gx = 0;
-		uint16_t gy = 0;
+		uint32_t tmpIdx = 0;
+		int16_t gx = 0; // NOTICE: gx,gy may be NEGATIVE!!!
+		int16_t gy = 0;
+
+		if (header.Height < 3 || header.Width < 3)
+			return false;
+
+		for (uint32_t i = 0; i < dataSize; i++)
+			newData[i] = 255;
 
 		//Convert image to grayscale
 		RGB2Y();
 
-		for (uint32_t i = 1, n = header.Width - 1; i < n; i++)
+		for (uint32_t i = 1, n = header.Height; i < n; i++)
 		{
-			for (uint32_t j = 1, m = header.Height - 1; j < m; j++)
+			for (uint32_t j = 1, m = header.Width; j < m; j++)
 			{
-				gx = -(data[i * j - 1] + data[i * j + header.Width - 1] + data[i * j - header.Width - 1]) + data[i * j + 1] + data[i * j - header.Width + 1] + data[i * j + header.Width + 1];
-				gx = -(data[i * j + header.Width - 1] + data[i * j + header.Width] + data[i * j + header.Width + 1]) + data[i * j - header.Width - 1] + data[i * j - header.Width] + data[i * j - header.Width + 1];
-				data[i * j] = sqrt(gx*gx + gy*gy);
+				tmpIdx = i * header.Width + j;
+				//cout << "(" << i << "," << j << ") ";
+				//cout << tmpIdx << endl;
+				gx = -(data[3 * (tmpIdx - 1)] + data[3 * (tmpIdx + header.Width - 1)] + data[3 * (tmpIdx - header.Width - 1)]) + data[3 * (tmpIdx + 1)] + data[3 * (tmpIdx - header.Width + 1)] + data[3 * (tmpIdx + header.Width + 1)];
+				gy = -(data[3 * (tmpIdx + header.Width - 1)] + data[3 * (tmpIdx + header.Width)] + data[3 * (tmpIdx + header.Width + 1)]) + data[3 * (tmpIdx - header.Width - 1)] + data[3 * (tmpIdx - header.Width)] + data[3 * (tmpIdx - header.Width + 1)];
+				newData[3 * tmpIdx] = newData[3 * tmpIdx + 1] = newData[3 * tmpIdx + 2] = sqrt(gx*gx + gy*gy);
 			}
 		}
 
-		for (uint32_t i = 0; i < header.Width; i++)
-			data[i] = data[i + 1] = data[i + 2] = 255;
-		for (uint32_t i = 1; i < header.Height - 2; i++)
-		{
-			data[3 * i * header.Width] = data[3 * header.Width + 1] = data[3 * header.Width + 2] = 255;
-			data[3*(i*header.Width+header.Width-1)] = data[3*(i*header.Width+header.Width-1) + 1] = data[3*(i*header.Width+header.Width-1) + 2] = 255;
-		}
-		for (uint32_t i = header.Width * (header.Height - 1); i < getPxlNum(); i++)
-			data[i] = data[i + 1] = data[i + 2] = 255;
+		// Replace old data
+		delete[] data;
+		data = newData;
+		newData = NULL;
 
-			return true;
+		return true;
 	}
 
 };
