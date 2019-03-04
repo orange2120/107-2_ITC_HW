@@ -96,7 +96,11 @@ public:
 	BMPImg() {
 	}
 	BMPImg(string picPath) {
-		loadPic(picPath);
+		if(!loadPic(picPath))
+		{
+			cerr << "ERROR: File open failed!" << endl;
+			exit(1);
+		}
 	}
 	~BMPImg() {
 		delete[] data;
@@ -118,6 +122,9 @@ public:
 		ifstream pic;
 		pic.open(picPath.c_str(), ios::in | ios::binary);
         
+		if (!pic.is_open())
+			return false;
+
 		for (int i = 0; i < headerNum; ++i) {
 			pic.read((char*) (header.pFlag(i)), headerSize[i]);
 		}
@@ -144,7 +151,6 @@ public:
 		}
 	}
 
-	
 	bool storePic(string outPath) {
 		ofstream picOut;
 		picOut.open(outPath.c_str(), ios::out | ios::binary);
@@ -195,8 +201,9 @@ public:
 		uint32_t dataSize = getPxlNum() * getBytesPerPixel();
 		newData = new unsigned char[dataSize];
 		uint32_t tmpIdx = 0;
-		int16_t gx = 0; // NOTICE: gx,gy may be NEGATIVE!!!
-		int16_t gy = 0;
+		int32_t gx = 0; // NOTICE: gx,gy may be NEGATIVE!!!
+		int32_t gy = 0;
+		uint32_t tmpG = 0;
 
 		if (header.Height < 3 || header.Width < 3)
 			return false;
@@ -207,16 +214,21 @@ public:
 		//Convert image to grayscale
 		RGB2Y();
 
-		for (uint32_t i = 1, n = header.Height; i < n; i++)
+		//storePic("./output/gray.bmp"); // save grayscale image
+
+		for (uint32_t i = 1, n = header.Height; i < n; ++i)
 		{
-			for (uint32_t j = 1, m = header.Width; j < m; j++)
+			for (uint32_t j = 1, m = header.Width; j < m; ++j)
 			{
 				tmpIdx = i * header.Width + j;
 				//cout << "(" << i << "," << j << ") ";
 				//cout << tmpIdx << endl;
 				gx = -(data[3 * (tmpIdx - 1)] + data[3 * (tmpIdx + header.Width - 1)] + data[3 * (tmpIdx - header.Width - 1)]) + data[3 * (tmpIdx + 1)] + data[3 * (tmpIdx - header.Width + 1)] + data[3 * (tmpIdx + header.Width + 1)];
 				gy = -(data[3 * (tmpIdx + header.Width - 1)] + data[3 * (tmpIdx + header.Width)] + data[3 * (tmpIdx + header.Width + 1)]) + data[3 * (tmpIdx - header.Width - 1)] + data[3 * (tmpIdx - header.Width)] + data[3 * (tmpIdx - header.Width + 1)];
-				newData[3 * tmpIdx] = newData[3 * tmpIdx + 1] = newData[3 * tmpIdx + 2] = sqrt(gx*gx + gy*gy);
+				tmpG = sqrt(gx*gx + gy*gy);
+				if (tmpG > 255)
+					tmpG = 255;
+				newData[3 * tmpIdx] = newData[3 * tmpIdx + 1] = newData[3 * tmpIdx + 2] = (unsigned char)tmpG;
 			}
 		}
 
