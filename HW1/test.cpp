@@ -13,6 +13,7 @@ int main(int argc, char* argv[]) {
 	filename.assign(argv[1]);
 
 	BMPImg img("./img/" + filename);
+	img.printHeader();
 	img.PrewittFilter();
 	img.storePic("./output/test_" + filename);
 

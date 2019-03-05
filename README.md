@@ -39,4 +39,4 @@ Run test
 make test
 ./test <Image path>
 ```
-<Image path>: images need to be stored in `./img` folder. Ex: `./test test.bmp`
+`<Image path>`: images need to be stored in `./img` folder. Ex: `./test test.bmp`
