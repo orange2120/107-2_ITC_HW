@@ -2,3 +2,4 @@
 
 #Excutable files
 *.o
+*.h.gch
