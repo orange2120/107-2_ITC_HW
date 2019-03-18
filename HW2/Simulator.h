@@ -11,15 +11,13 @@ class Simulator{
             programCounter.resize(8, 0);
             
             regis.resize(5);
-            for(int i=0; i<regis.size(); i++){
+            for(uint32_t i=0; i<regis.size(); i++){
                 regis[i].resize(8, 0);
             }
-
-
         }
 
-        bool loadMemory(string);
-        bool storeMemory(string);
+        bool loadMemory(const string);
+        bool storeMemory(const string);
         bool simulate();
 
     private:
