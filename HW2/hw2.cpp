@@ -4,7 +4,11 @@
 
 int main() {
     Simulator sim;
-    for(int i = 1 ; i < 7 ; i++){
+
+    sim.loadMemory("input/input2"); 
+    sim.simulate();
+    sim.storeMemory("output/output2");
+    /*for(int i = 1 ; i < 7 ; i++){
 	string index;
 	std::stringstream ss;
 	ss << i;
@@ -13,6 +17,7 @@ int main() {
         sim.simulate();
         sim.storeMemory("output/output"+index);
     }
+    */
 
     return 0;
 }

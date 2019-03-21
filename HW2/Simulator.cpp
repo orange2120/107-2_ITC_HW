@@ -1,23 +1,39 @@
 #include "Simulator.h"
 #include <iostream>
 #include <fstream>
+#include <iomanip> 
 using namespace std;
 
 bool Simulator::loadMemory(const string path) {
     ifstream ifile;
-    ifile.open(path.c_str(), ios::in);
+    ifile.open(path.c_str(), ios::in | ios::binary);
 
     if (!ifile.is_open())
         return false;
 
-    string tmp;
-    getline(ifile, tmp);
-    int a = (int)tmp[0];
-    for(int i=0; i<8; i++){
-        int t = 0x01;
-        t = (t<<i);
-        cout<<(a&t)<<endl;
-    }
+    char tmp = 0;
+    int count = 0;
+
+    //string tmp;
+    //getline(ifile, tmp);
+
+   
+
+    while(!ifile.eof())
+    {
+        ifile.get(tmp);
+        if (tmp < 0)
+            tmp = ~tmp;
+        cout << setw(2) << hex << (int)tmp << " ";
+        count++; 
+        if(count > 16) {  // 換行 
+            cout << endl; 
+            count = 0; 
+        } 
+
+
+        
+    }   
 
     ifile.close();
 
