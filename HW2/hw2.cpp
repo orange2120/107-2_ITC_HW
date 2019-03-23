@@ -5,9 +5,9 @@
 int main() {
     Simulator sim;
 
-    sim.loadMemory("input/input2"); 
+    sim.loadMemory("input/input1"); 
     sim.simulate();
-    sim.storeMemory("output/output2");
+    //sim.storeMemory("output/output1");
     /*for(int i = 1 ; i < 7 ; i++){
 	string index;
 	std::stringstream ss;
