@@ -40,11 +40,20 @@ class Simulator
         bool storeMemory(const string);
         bool simulate();
         void printMemory(const vector<char> &);
+        char getRegIndex(const char &);
 
-        void loadMemToReg();
-        void loadBinToReg();
-        void StoreToMem();
-        void Move();
+        void loadMemToReg(char &, const char &);
+        void loadBinToReg(char &, const char);
+        void StoreToMem(const char &, char &);
+        void Move(char &, char &);
+        void Add2sComp(char &, char &, char &);
+        void AddFloat(char &, char &, char &);
+        void OR(char &, char &, char &);
+        void AND(char &, char &, char &);
+        void ExclusiveOR(char &, char &, char &);
+        void rotate(char &, char);
+        bool jump(const char &, const char &);
+
 
       private:
         vector<char> programCounter;

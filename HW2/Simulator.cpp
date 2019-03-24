@@ -75,7 +75,6 @@ bool Simulator::simulate() {
     char pc[2] = {0};
     char operand = 0;
     char opCode = 0;
-    //instruction =
 
     //while (pc[0] != 0xC0 )
     pc[0] = input[0];
@@ -92,62 +91,68 @@ bool Simulator::simulate() {
    //TODO
    //照順序執行
 
-   switch (instruction)
-   {
+    programCounter.push_back(pc[i]);
+
+    switch (opCode)
+    {
         case LOAD_MEM_TO_REG:
-            loadMemToReg(pc[]);
+            //loadMemToReg(pc[i], pc[i+1]);
+            regIdx = getRegIndex(pc[i]);
+            regis[regIdx] = memory[pc[i + 1]];
             break;
 
         case LOAD_BIN_TO_REG:
-            loadBinToReg();
+            //loadBinToReg(pc[i], pc[i+1]);
+            regIdx = getRegIndex(pc[i]);
+            regis[regIdx] = pc[i + 1];
             break;
 
         case STORE:
-           /* code */
-           break;
+        /* code */
+        break;
 
         case MOVE:
-           /* code */
-           break;
+        /* code */
+        break;
 
         case ADD_TWO_COMPL:
-           /* code */
-           break;
+        /* code */
+        break;
         case ADD_FLOAT:
-           /* code */
-           break;
+        /* code */
+        break;
 
         case OR:
-           /* code */
-           break;
+        /* code */
+        break;
         
         case AND:
-           /* code */
-           break;
+        /* code */
+        break;
 
         case EXCLUSIVE_OR:
-           /* code */
-           break;
+        /* code */
+        break;
 
         case ROTATE:
-           /* code */
-           break;
+        /* code */
+        break;
         
         case JUMP:
-           /* code */
-           break;
+        /* code */
+        break;
         
         case HALT:
-           /* code */
-           break;
+        /* code */
+        break;
         
         case 0x0C:
-           /* code */
-           break;
-   
-       default:
-           break;
-   }
+        /* code */
+        break;
+    
+        default:
+            break;
+    }
 
 
 
@@ -171,22 +176,62 @@ void Simulator::printMemory(const vector<char> &v)
     cout << endl;
 }
 
-void Simulator::loadMemToReg()
+inline char Simulator::getRegIndex(const char &reg)
+{
+    return (reg & 0x0F);
+}
+
+inline void Simulator::loadMemToReg(char &reg, const char &mem)
+{
+    reg = mem;
+}
+
+inline void Simulator::loadBinToReg(char &reg, const char bin)
+{
+    reg = bin;
+}
+
+inline void Simulator::StoreToMem(const char &reg, char &mem)
+{
+    mem = reg;
+}
+
+inline void Simulator::Move(char &regR, char &regS)
+{
+    regS = regR;
+}
+
+inline void Simulator::Add2sComp(char &regS, char &regT, char &regR)
+{
+    regR = regS + regT;
+}
+
+void Simulator::AddFloat(char &regS, char &regT, char &regR)
 {
 
 }
 
-void Simulator::loadBinToReg()
+inline void Simulator::OR(char &regS, char &regT, char &regR)
 {
 
 }
 
-void Simulator::StoreToMem()
+void Simulator::AND(char &regS, char &regT, char &regR)
 {
 
 }
 
-void Simulator::Move()
+void Simulator::ExclusiveOR(char &regS, char &regT, char &regR)
+{
+
+}
+
+void Simulator::rotate(char &regR, char times)
+{
+
+}
+
+bool Simulator::jump(const char &regR, const char &mem)
 {
 
 }
