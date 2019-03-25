@@ -4,9 +4,17 @@
 #include <iomanip> 
 using namespace std;
 
+Simulator::Simulator()
+{
+    reset();
+}
+
 bool Simulator::loadMemory(const string path) {
+
+    reset();
+
     ifstream ifile;
-    ifile.open(path.c_str(), ios::in | ios::binary);
+    ifile.open(path.c_str(), ifstream::in | ifstream::binary);
 
     if (!ifile.is_open())
         return false;
@@ -14,7 +22,6 @@ bool Simulator::loadMemory(const string path) {
     unsigned int fileSize;
     unsigned int i = 0;
     char tmp = 0;
-    int count = 0;
 
     // Determine file size
     ifile.seekg(0, ios::end);
@@ -22,150 +29,145 @@ bool Simulator::loadMemory(const string path) {
     cout << "File Size: " << fileSize << " bytes." << endl;
     ifile.seekg(0);
 
-    input.resize(fileSize);
-
     while (!ifile.eof())
     {
         ifile.get(tmp);
-        //cout << "i: " << i << endl;
-        input[i] = (char)tmp;
-        i++;
-        
-        int16_t a = tmp & (0x00FF);
-        cout << setw(2) << hex << a << " ";
-        count++;
-        if (count > 16)
-        { // 換行
-            cout << endl;
-            count = 0;
-        }
+        //memory[i++] = (char)tmp;
+        input[i++] = (char)tmp;
     }
 
+    printMemory();
+
     ifile.close();
-
-    cout << endl;
-
-    //printMemory(input);
 
     return true;
 }
 
 bool Simulator::storeMemory(const string path) {
-    //TODO
+
+    printMemory(); // For debug
 
     ofstream ofs;
-    ofs.open(path.c_str(), ios::trunc | ios::binary);
-    for (int i = 0; i < 16;i++)
-    {
-        //ofs.write((char)regis[i]);
-    }
-    for (int i = 0; i < 240; i++)
-    {
-        //ofs.write(0x0, );
-    }
+    ofs.open(path.c_str(), ofstream::trunc | ofstream::binary);
 
+    if(!ofs.is_open())
+        return false;
+
+    ofs.write(memory, 256);
     ofs.close();
+
     return true;
 }
 
 bool Simulator::simulate() {
-    //TODO
-    unsigned int inputIdx = 0;
-    char regIdx = 0;
-    char pc[2] = {0};
-    char operand = 0;
+    bool stop = false;
+    int8_t pcIdx = 0x00;
+    char *pc = input; // input[0]
     char opCode = 0;
+    int8_t operand = 0;
+    int8_t regS = 0;
+    int8_t regT = 0;
 
-    //while (pc[0] != 0xC0 )
-    pc[0] = input[0];
-    pc[1] = input[1];
-    opCode = ((pc[0] & 0xF0) >> 4); // extract Op-code
-    operand = pc[0] & 0x0F;
-
-    /*int16_t a = pc[0] & (0x00FF);
-    cout << setw(2) << hex << a << " " << endl;
-
-    int16_t b = instruction & (0x00FF);
-    cout  << "in" << setw(2) << hex << b << " " << endl;
-    */
-   //TODO
-   //照順序執行
-
-    programCounter.push_back(pc[i]);
-
-    switch (opCode)
+    while (!stop)
     {
-        case LOAD_MEM_TO_REG:
-            //loadMemToReg(pc[i], pc[i+1]);
-            regIdx = getRegIndex(pc[i]);
-            regis[regIdx] = memory[pc[i + 1]];
-            break;
+        memory[pcIdx] = *pc;
+        memory[pcIdx + 1] = *(pc + 1);
+        opCode = (*pc & 0xF0) >> 4; // extract Op-code
+        operand = *pc & 0x0F;
+        regS = (*(pc + 1) & 0xF0) >> 4;
+        regT = *(pc + 1) & 0x0F;
 
-        case LOAD_BIN_TO_REG:
-            //loadBinToReg(pc[i], pc[i+1]);
-            regIdx = getRegIndex(pc[i]);
-            regis[regIdx] = pc[i + 1];
-            break;
+        // for debug
+        cout << "PC:[" << setfill('0') << setw(2) << hex << uppercase << (int16_t)(pcIdx & 0x00FF) << "] ";
+        cout << setfill('0') << setw(2) << hex << uppercase << (int16_t)(*pc & 0x00FF) << '-';
+        cout << setfill('0') << setw(2) << hex << uppercase << (int16_t)(*(pc + 1) & 0x00FF) << endl;
 
-        case STORE:
-        /* code */
-        break;
+        programCounter.push_back(pcIdx);
 
-        case MOVE:
-        /* code */
-        break;
+        switch (opCode)
+        {
+            case LOAD_MEM_TO_REG:
+                regis[operand] = memory[(int8_t)*(pc + 1)];
+                break;
 
-        case ADD_TWO_COMPL:
-        /* code */
-        break;
-        case ADD_FLOAT:
-        /* code */
-        break;
+            case LOAD_BIN_TO_REG:
+                regis[operand] = *(pc + 1);
+                break;
 
-        case OR:
-        /* code */
-        break;
-        
-        case AND:
-        /* code */
-        break;
+            case STORE:
+                memory[(int8_t)*(pc + 1)] = regis[operand];
+                break;
 
-        case EXCLUSIVE_OR:
-        /* code */
-        break;
+            case MOVE:
+                regis[regT] = regis[regS];
+                break;
 
-        case ROTATE:
-        /* code */
-        break;
-        
-        case JUMP:
-        /* code */
-        break;
-        
-        case HALT:
-        /* code */
-        break;
-        
-        case 0x0C:
-        /* code */
-        break;
-    
-        default:
-            break;
+            case ADD_TWO_COMPL:
+                regis[operand] = regis[regS] + regis[regT];
+                break;
+
+            case ADD_FLOAT:
+                addFloat(regis[operand], regis[regS], regis[regT]);
+                break;
+
+            case OR:
+                regis[operand] = regis[regS] | regis[regT];
+                break;
+            
+            case AND:
+                regis[operand] = regis[regS] & regis[regT];
+                break;
+
+            case EXCLUSIVE_OR:
+                regis[operand] = regis[regS] ^ regis[regT];
+                break;
+
+            case ROTATE:
+                rotate(regis[operand], regT);
+                break;
+            
+            case JUMP:
+                if(regis[operand] == regis[0])
+                {
+                    pc = &memory[(int8_t)*(pc + 1)]; // move to memory address XY
+                    pcIdx = *(pc + 1) - 2;
+                }
+                break;
+            
+            case HALT:
+                if (operand == 0 && (*(pc + 1) == 0x00))
+                {
+                    stop = true;
+                    cout << "HALT" << endl;
+                }
+                break;
+        }
+        pc += 2; // Move to next instruction
+        pcIdx += 2;
+
+        printReg();
     }
-
-
 
     return true;
 }
 
-void Simulator::printMemory(const vector<char> &v)
+void Simulator::reset()
+{
+    // reset memory and register
+    for (int i = 0; i < 256; ++i)
+        memory[i] = 0;
+    for (int i = 0; i < 16; ++i)
+        regis[i] = 0;
+}
+
+void Simulator::printMemory() const 
 {
     int cnt = 0;
-    for (int i = 0; i < v.size(); i++)
+
+    cout << endl << "------------------------MEM------------------------" << endl;
+    for (int i = 0; i < 256; i++)
     {
-        int16_t a = v[i] & (0x00FF);
-        cout << setw(2) << hex << a << " ";
+        cout << setfill('0') << setw(2) << hex << uppercase << (int16_t)(memory[i] & (0x00FF)) << " ";
         cnt++;
         if (cnt > 16)
         {
@@ -176,62 +178,43 @@ void Simulator::printMemory(const vector<char> &v)
     cout << endl;
 }
 
-inline char Simulator::getRegIndex(const char &reg)
+void Simulator::printReg() const
 {
-    return (reg & 0x0F);
+    cout << "REG: ";
+    for (int i = 0; i < 16; i++)
+        cout << setfill('0') << setw(2) << hex << uppercase << (int16_t)(regis[i] & 0x00FF) << " ";
+    cout << endl;
 }
 
-inline void Simulator::loadMemToReg(char &reg, const char &mem)
+inline void Simulator::rotate(char &regR, uint8_t times)
 {
-    reg = mem;
+    char lsb = 0;
+    for (uint8_t i = 0; i < times; ++i)
+    {
+        lsb = regR & 0x01;
+        regR >>= 1;
+        lsb <<= 8;
+        regR |= lsb;
+    }
 }
 
-inline void Simulator::loadBinToReg(char &reg, const char bin)
+inline void Simulator::addFloat(char &regR, char &regS, char &regT)
 {
-    reg = bin;
-}
-
-inline void Simulator::StoreToMem(const char &reg, char &mem)
-{
-    mem = reg;
-}
-
-inline void Simulator::Move(char &regR, char &regS)
-{
-    regS = regR;
-}
-
-inline void Simulator::Add2sComp(char &regS, char &regT, char &regR)
-{
-    regR = regS + regT;
-}
-
-void Simulator::AddFloat(char &regS, char &regT, char &regR)
-{
+    char signS = regS & 0x80, signT = regT & 0x80;
+    char expS = regS & 0x70, expT = regT & 0x70;
+    if(expS > expT)
+    {
+        
+    }
 
 }
 
-inline void Simulator::OR(char &regS, char &regT, char &regR)
+void Simulator::assemblySim()
 {
-
+    //ostream os;
 }
 
-void Simulator::AND(char &regS, char &regT, char &regR)
+bool Simulator::storeAsm(const string path)
 {
-
-}
-
-void Simulator::ExclusiveOR(char &regS, char &regT, char &regR)
-{
-
-}
-
-void Simulator::rotate(char &regR, char times)
-{
-
-}
-
-bool Simulator::jump(const char &regR, const char &mem)
-{
-
+    return true;
 }

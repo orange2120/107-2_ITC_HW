@@ -24,44 +24,28 @@ enum Instructions
 class Simulator
 {
     public:
-        Simulator()
-        {
-            programCounter.resize(8, 0);
-            
-            //regis.resize(5);
-            //for(uint32_t i=0; i<regis.size(); i++){
-            //    regis[i].resize(8, 0);
-            //}
-        }
+      Simulator();
 
-        ~Simulator() {}
+      ~Simulator() {}
 
-        bool loadMemory(const string);
-        bool storeMemory(const string);
-        bool simulate();
-        void printMemory(const vector<char> &);
-        char getRegIndex(const char &);
+      bool loadMemory(const string);
+      bool storeMemory(const string);
+      bool simulate();
+      void reset();
+      void printMemory() const;
+      void printReg() const;
 
-        void loadMemToReg(char &, const char &);
-        void loadBinToReg(char &, const char);
-        void StoreToMem(const char &, char &);
-        void Move(char &, char &);
-        void Add2sComp(char &, char &, char &);
-        void AddFloat(char &, char &, char &);
-        void OR(char &, char &, char &);
-        void AND(char &, char &, char &);
-        void ExclusiveOR(char &, char &, char &);
-        void rotate(char &, char);
-        bool jump(const char &, const char &);
+      void rotate(char &, uint8_t);
+      void addFloat(char &, char &, char &);
 
+      void assemblySim();
+      bool storeAsm(const string);
 
-      private:
-        vector<char> programCounter;
-        vector<char> input;
-        //vector< vector<bool> > regis;
-        char regis[16];
-        //vector< vector<bool> > memory;
-        char memory[256] = {0};
+    private:
+      vector<char> programCounter;
+      char regis[16] = {0};
+      char input[256] = {0};
+      char memory[256] = {0};
         
 };
 

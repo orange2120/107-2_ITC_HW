@@ -6,9 +6,19 @@ hw2: hw2.o Simulator.o
 	g++ -o $@ hw2.o Simulator.o $(CFLAGS)
 	@echo "Done."
 
+test: test.o Simulator.o
+	@echo "Compiling test..."
+	g++ -o $@ test.o Simulator.o $(CFLAGS)
+	@echo "Done."
+
+asmSim: asmSim.o Simulator.o
+	@echo "Compiling Assembly Simulator..."
+	g++ -o $@ asmSim.o Simulator.o $(CFLAGS)
+	@echo "Done."
+
 Simulator.o: Simulator.h Simulator.cpp
 	g++ -c Simulator.h Simulator.cpp $(CFLAGS)
 
 clean:
-	rm -f hw2 *.o *.h.gch output/result*
+	rm -f hw2 test asmSim *.o *.h.gch output/result*
 	@echo "Done." 
