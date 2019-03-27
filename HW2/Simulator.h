@@ -38,14 +38,15 @@ class Simulator
       void rotate(uint8_t &, uint8_t);
       void addFloat(uint8_t &, uint8_t &, uint8_t &);
 
+      // For Assembly Simulator
       bool loadAsm(const string);
-      void assemblySim();
-      bool storeAsm(const string);
 
     private:
+      int myStrNCmp(const string &, const string &, unsigned);
+      size_t myStrGetTok(const string &, string &, size_t, const char);
+      //bool myStr2UInt8(const string &, uint8_t &);
+
       vector<uint8_t> programCounter;
-      //char regis[16] = {0};
-      //char memory[256] = {0};
       uint8_t regis[16] = {0};
       uint8_t memory[256] = {0};
         

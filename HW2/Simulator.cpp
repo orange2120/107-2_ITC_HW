@@ -21,21 +21,19 @@ bool Simulator::loadMemory(const string path) {
 
     unsigned int fileSize;
     unsigned int i = 0;
-    char tmp = 0;
+    char c = 0;
 
-    // Determine file size
+    // Determine the file size
     ifile.seekg(0, ios::end);
     fileSize = ifile.tellg();
     cout << "File Size: " << fileSize << " bytes." << endl;
     ifile.seekg(0);
 
+    // Read file in
     while (!ifile.eof())
     {
-        uint8_t test = 0;
-        ifile.get(tmp);
-        test = tmp;
-        //cout << setfill('0') << setw(2) << hex << uppercase << (int16_t)(test & 0x00FF) << "] ";
-        memory[i++] = (uint8_t)(test);
+        ifile.get(c);
+        memory[i++] = (uint8_t)(c);
     }
 
     printMemory();
@@ -56,6 +54,10 @@ bool Simulator::storeMemory(const string path) {
         return false;
 
     //ofs.write(memory, 256);
+    // Write file in
+    for (int i = 0; i < 256; i++)
+        ofs.put((char)memory[i]);
+    
     ofs.close();
 
     return true;
@@ -64,6 +66,7 @@ bool Simulator::storeMemory(const string path) {
 bool Simulator::simulate() {
     bool stop = false;
     int16_t pcIdx = 0x00;
+    int16_t memAddr = 0x00;
     uint8_t *pc = memory; // input[0]
     int8_t opCode = 0;
     int8_t operand = 0;
@@ -76,7 +79,7 @@ bool Simulator::simulate() {
         operand = *pc & 0x0F;
         regS = (*(pc + 1) & 0xF0) >> 4;
         regT = *(pc + 1) & 0x0F;
-        int16_t t = *(pc + 1);
+        memAddr = *(pc + 1);
 
         // for debug
         cout << "PC: [" << setfill('0') << setw(2) << hex << uppercase << (int16_t)(pcIdx & 0x00FF) << "] ";
@@ -84,24 +87,21 @@ bool Simulator::simulate() {
         cout << setfill('0') << setw(2) << hex << uppercase << (uint16_t)(*pc & 0x00FF) << '-';
         cout << setfill('0') << setw(2) << hex << uppercase << (uint16_t)(*(pc + 1) & 0x00FF) << endl;
 
-        programCounter.push_back(pcIdx);
+        programCounter.push_back(pcIdx); // Record program counter
 
         switch (opCode)
         {
             
             case LOAD_MEM_TO_REG:
-            {
-                //int16_t t = *(pc + 1);
-                regis[operand] = memory[t];
+                regis[operand] = memory[memAddr];
                 break;
-            }
 
             case LOAD_BIN_TO_REG:
                 regis[operand] = *(pc + 1);
                 break;
 
             case STORE:
-                memory[t] = regis[operand];
+                memory[memAddr] = regis[operand];
                 break;
 
             case MOVE:
@@ -135,8 +135,8 @@ bool Simulator::simulate() {
             case JUMP:
                 if(regis[operand] == regis[0])
                 {
-                    pc = &memory[t]; // move to memory address XY
-                    pcIdx = t;
+                    pc = &memory[memAddr]; // move to memory address XY
+                    pcIdx = memAddr;
                     continue;
                 }
                 break;
@@ -172,7 +172,7 @@ void Simulator::printMemory() const
     int cnt = 0;
 
     cout << endl << "----------------------MEM----------------------" << endl;
-    for (int i = 0; i < 256; i++)
+    for (int i = 0; i < 256; ++i)
     {
         cout << setfill('0') << setw(2) << hex << uppercase << (uint16_t)(memory[i] & 0x00FF) << " ";
         cnt++;
@@ -182,7 +182,7 @@ void Simulator::printMemory() const
             cnt = 0;
         }
     }
-    cout << endl;
+    cout << "----------------------END----------------------" << endl;
 }
 
 void Simulator::printReg() const
@@ -215,11 +215,10 @@ inline void Simulator::addFloat(uint8_t &regR, uint8_t &regS, uint8_t &regT)
     // 對齊exponent
     if(delExp > 0) // S is larger, shifts T
     {
-        
         mantS <<= delExp;
         expT = expS;
     }
-    else
+    else // T is larger
     {
         mantT <<= -delExp;
         expS = expT;
@@ -229,6 +228,7 @@ inline void Simulator::addFloat(uint8_t &regR, uint8_t &regS, uint8_t &regT)
     if(delExp > 5)
     {
         regR = regS;
+        expRes = expS;
         return;
     }
     expRes = expS; // 讓結果位數一樣
@@ -248,6 +248,7 @@ inline void Simulator::addFloat(uint8_t &regR, uint8_t &regS, uint8_t &regT)
         mantRes = mantS + mantT;
     }
 
+    // 相加之後 > 2 捨去一位
     if (mantRes > 0xF)
     {
         mantRes >>= 1;
@@ -259,20 +260,139 @@ inline void Simulator::addFloat(uint8_t &regR, uint8_t &regS, uint8_t &regT)
 
 bool Simulator::loadAsm(const string path)
 {
+    reset();
+
     ifstream ifs;
-    /*if()
+    ifs.open(path.c_str(), ifstream::in);
+
+    if (!ifs.is_open())
+        return false;
+
+    vector<string> input;
+    string str_s = "";
+    char str[128] = {0};
+    unsigned int n = 0;
+
+    while (ifs.getline(str, 256 ,'\n'))
     {
+        str_s.assign(str);
+        input.push_back(str);
+    }
 
-    }*/
-    return 0;
-}
+    n = input.size();
 
-void Simulator::assemblySim()
-{
-    //ostream os;
-}
+    for (unsigned int i = 0; i < n; ++i)
+    {
+        string pch = "";
+        size_t strN = 0;
+        uint8_t r = 0, s = 0, t = 0;
+        uint8_t xy = 0;
 
-bool Simulator::storeAsm(const string path)
-{
+        cout << input[i] << endl;
+
+       strN = myStrGetTok(input[i], pch , 0, ' '); // Get instruction 
+        
+        if(myStrNCmp("lw", pch, 2) == 0)
+        {
+            //myStrGetTok(input[i], pch , 1, ' ');
+            //r = myStr2Int(pch);
+        }
+        else if (myStrNCmp("lb", pch, 2) == 0)
+        {
+            strN = myStrGetTok(input[i], pch , strN, ' ');
+            // TODO HEX string to uint8_t
+            //myStr2UInt8(pch, r);
+            cout << pch << hex << (uint16_t)(r & 0xFF) << endl;
+        }
+        else if (myStrNCmp("sw", pch, 2) == 0)
+        {
+
+        }
+        else if (myStrNCmp("mv", pch, 2) == 0)
+        {
+
+        }
+        else if (myStrNCmp("add", pch, 3) == 0)
+        {
+
+        }
+        else if (myStrNCmp("addf", pch, 4) == 0)
+        {
+
+        }
+        else if (myStrNCmp("or", pch, 2) == 0)
+        {
+
+        }
+        else if (myStrNCmp("and", pch, 3) == 0)
+        {
+
+        }
+        else if (myStrNCmp("xor", pch, 3) == 0)
+        {
+
+        }
+        else if (myStrNCmp("srl", pch, 3) == 0)
+        {
+
+        }
+        else if (myStrNCmp("beq", pch, 3) == 0)
+        {
+
+        }
+        else if (myStrNCmp("halt", pch, 4) == 0)
+        {
+
+        }
+    }
+
     return true;
 }
+
+
+// Private member functions
+int Simulator::myStrNCmp(const string& s1, const string& s2, unsigned n)
+{
+   unsigned n2 = s2.size();
+   if (n2 == 0) return -1;
+   unsigned n1 = s1.size();
+   for (unsigned i = 0; i < n1; ++i) {
+      if (i == n2)
+         return (i < n)? 1 : 0;
+      char ch1 = (isupper(s1[i]))? tolower(s1[i]) : s1[i];
+      char ch2 = (isupper(s2[i]))? tolower(s2[i]) : s2[i];
+      if (ch1 != ch2)
+         return (ch1 - ch2);
+   }
+   return (n1 - n2);
+}
+
+size_t Simulator::myStrGetTok(const string& str, string& tok, size_t pos = 0, const char del = ' ')
+{
+   size_t begin = str.find_first_not_of(del, pos);
+   if (begin == string::npos) { tok = ""; return begin; }
+   size_t end = str.find_first_of(del, begin);
+   tok = str.substr(begin, end - begin);
+   return end;
+}
+
+/*
+bool Simulator::myStr2UInt8(const string& str, uint8_t& num)
+{
+   num = 0;
+   size_t i = 0;
+   int sign = 1;
+   if (str[0] == '-') { sign = -1; i = 1; }
+   bool valid = false;
+   for (; i < str.size(); ++i) {
+      if (isdigit(str[i])) {
+         num *= 10;
+         num += int16_t(str[i] - '0');
+         valid = true;
+      }
+      else return false;
+   }
+   num *= sign;
+   return valid;
+}
+*/
