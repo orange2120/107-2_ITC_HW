@@ -35,17 +35,19 @@ class Simulator
       void printMemory() const;
       void printReg() const;
 
-      void rotate(char &, uint8_t);
-      void addFloat(char &, char &, char &);
+      void rotate(uint8_t &, uint8_t);
+      void addFloat(uint8_t &, uint8_t &, uint8_t &);
 
+      bool loadAsm(const string);
       void assemblySim();
       bool storeAsm(const string);
 
     private:
-      vector<char> programCounter;
-      char regis[16] = {0};
-      char input[256] = {0};
-      char memory[256] = {0};
+      vector<uint8_t> programCounter;
+      //char regis[16] = {0};
+      //char memory[256] = {0};
+      uint8_t regis[16] = {0};
+      uint8_t memory[256] = {0};
         
 };
 

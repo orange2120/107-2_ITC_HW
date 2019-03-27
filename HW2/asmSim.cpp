@@ -16,7 +16,7 @@ int main(int argc, char* argv[])
     ss << argv[1];
     string index = ss.str();
 
-    if (!sim.loadMemory("input/input" + index))
+    if (!sim.loadAsm("input/input" + index))
     {
         cerr << "[ERROR] Open file failed!" << endl;
         return 0;

@@ -31,9 +31,11 @@ bool Simulator::loadMemory(const string path) {
 
     while (!ifile.eof())
     {
+        uint8_t test = 0;
         ifile.get(tmp);
-        //memory[i++] = (char)tmp;
-        input[i++] = (char)tmp;
+        test = tmp;
+        //cout << setfill('0') << setw(2) << hex << uppercase << (int16_t)(test & 0x00FF) << "] ";
+        memory[i++] = (uint8_t)(test);
     }
 
     printMemory();
@@ -53,7 +55,7 @@ bool Simulator::storeMemory(const string path) {
     if(!ofs.is_open())
         return false;
 
-    ofs.write(memory, 256);
+    //ofs.write(memory, 256);
     ofs.close();
 
     return true;
@@ -61,41 +63,45 @@ bool Simulator::storeMemory(const string path) {
 
 bool Simulator::simulate() {
     bool stop = false;
-    int8_t pcIdx = 0x00;
-    char *pc = input; // input[0]
-    char opCode = 0;
+    int16_t pcIdx = 0x00;
+    uint8_t *pc = memory; // input[0]
+    int8_t opCode = 0;
     int8_t operand = 0;
     int8_t regS = 0;
     int8_t regT = 0;
 
     while (!stop)
     {
-        memory[pcIdx] = *pc;
-        memory[pcIdx + 1] = *(pc + 1);
         opCode = (*pc & 0xF0) >> 4; // extract Op-code
         operand = *pc & 0x0F;
         regS = (*(pc + 1) & 0xF0) >> 4;
         regT = *(pc + 1) & 0x0F;
+        int16_t t = *(pc + 1);
 
         // for debug
-        cout << "PC:[" << setfill('0') << setw(2) << hex << uppercase << (int16_t)(pcIdx & 0x00FF) << "] ";
-        cout << setfill('0') << setw(2) << hex << uppercase << (int16_t)(*pc & 0x00FF) << '-';
-        cout << setfill('0') << setw(2) << hex << uppercase << (int16_t)(*(pc + 1) & 0x00FF) << endl;
+        cout << "PC: [" << setfill('0') << setw(2) << hex << uppercase << (int16_t)(pcIdx & 0x00FF) << "] ";
+        cout << "0x" << uppercase << (long)pc << " ";
+        cout << setfill('0') << setw(2) << hex << uppercase << (uint16_t)(*pc & 0x00FF) << '-';
+        cout << setfill('0') << setw(2) << hex << uppercase << (uint16_t)(*(pc + 1) & 0x00FF) << endl;
 
         programCounter.push_back(pcIdx);
 
         switch (opCode)
         {
+            
             case LOAD_MEM_TO_REG:
-                regis[operand] = memory[(int8_t)*(pc + 1)];
+            {
+                //int16_t t = *(pc + 1);
+                regis[operand] = memory[t];
                 break;
+            }
 
             case LOAD_BIN_TO_REG:
                 regis[operand] = *(pc + 1);
                 break;
 
             case STORE:
-                memory[(int8_t)*(pc + 1)] = regis[operand];
+                memory[t] = regis[operand];
                 break;
 
             case MOVE:
@@ -129,8 +135,9 @@ bool Simulator::simulate() {
             case JUMP:
                 if(regis[operand] == regis[0])
                 {
-                    pc = &memory[(int8_t)*(pc + 1)]; // move to memory address XY
-                    pcIdx = *(pc + 1) - 2;
+                    pc = &memory[t]; // move to memory address XY
+                    pcIdx = t;
+                    continue;
                 }
                 break;
             
@@ -143,7 +150,7 @@ bool Simulator::simulate() {
                 break;
         }
         pc += 2; // Move to next instruction
-        pcIdx += 2;
+        pcIdx += 0x2;
 
         printReg();
     }
@@ -164,12 +171,12 @@ void Simulator::printMemory() const
 {
     int cnt = 0;
 
-    cout << endl << "------------------------MEM------------------------" << endl;
+    cout << endl << "----------------------MEM----------------------" << endl;
     for (int i = 0; i < 256; i++)
     {
-        cout << setfill('0') << setw(2) << hex << uppercase << (int16_t)(memory[i] & (0x00FF)) << " ";
+        cout << setfill('0') << setw(2) << hex << uppercase << (uint16_t)(memory[i] & 0x00FF) << " ";
         cnt++;
-        if (cnt > 16)
+        if (cnt >= 16)
         {
             cout << endl;
             cnt = 0;
@@ -182,11 +189,11 @@ void Simulator::printReg() const
 {
     cout << "REG: ";
     for (int i = 0; i < 16; i++)
-        cout << setfill('0') << setw(2) << hex << uppercase << (int16_t)(regis[i] & 0x00FF) << " ";
+        cout << setfill('0') << setw(2) << hex << uppercase << (uint16_t)(regis[i] & 0x00FF) << " ";
     cout << endl;
 }
 
-inline void Simulator::rotate(char &regR, uint8_t times)
+inline void Simulator::rotate(uint8_t &regR, uint8_t times)
 {
     char lsb = 0;
     for (uint8_t i = 0; i < times; ++i)
@@ -198,15 +205,66 @@ inline void Simulator::rotate(char &regR, uint8_t times)
     }
 }
 
-inline void Simulator::addFloat(char &regR, char &regS, char &regT)
+inline void Simulator::addFloat(uint8_t &regR, uint8_t &regS, uint8_t &regT)
 {
-    char signS = regS & 0x80, signT = regT & 0x80;
-    char expS = regS & 0x70, expT = regT & 0x70;
-    if(expS > expT)
+    uint8_t signRes = 0, signS = (regS & 0x80) >> 7, signT = (regT & 0x80) >> 7;
+    uint8_t expRes = 0, expS = (regS & 0x70) >> 4, expT = (regT & 0x70) >> 4;
+    uint16_t mantRes = 0, mantS = regS & 0xF, mantT = regT & 0x0F;
+    uint8_t delExp = expS - expT;
+
+    // 對齊exponent
+    if(delExp > 0) // S is larger, shifts T
     {
         
+        mantS <<= delExp;
+        expT = expS;
+    }
+    else
+    {
+        mantT <<= -delExp;
+        expS = expT;
     }
 
+    // S >> T
+    if(delExp > 5)
+    {
+        regR = regS;
+        return;
+    }
+    expRes = expS; // 讓結果位數一樣
+
+    // 判斷正負號
+    if (signS ^ signT) // 正負異號
+    {
+        if (mantS > mantT)
+            mantRes = mantS - mantT;
+        else
+            mantRes = mantT - mantS;
+
+        signRes = 1;
+    }
+    else
+    {
+        mantRes = mantS + mantT;
+    }
+
+    if (mantRes > 0xF)
+    {
+        mantRes >>= 1;
+        expRes++;
+    }
+
+    regR = signRes << 7 | expRes << 4 | mantRes;
+}
+
+bool Simulator::loadAsm(const string path)
+{
+    ifstream ifs;
+    /*if()
+    {
+
+    }*/
+    return 0;
 }
 
 void Simulator::assemblySim()

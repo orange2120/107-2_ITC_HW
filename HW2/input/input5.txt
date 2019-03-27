@@ -1,0 +1,10 @@
+00 B1 0E ; reg[1] == reg[0] == 0, jump to 1E
+1E B1 F2 ; reg[1] == reg[0] == 0, jump to F2
+F2 B2 C0 ; reg[2] == reg[0] == 0, jump to C0
+C0 11 F3 ; load mem[F3] = 0xC0 to reg[1]
+C2 31 C4 ; store reg[1] = 0xC0 to mem[C4]
+...
+F2 B2 C0 ; reg[2] == reg[0] == 0, jump to C0
+C0 11 F3 ; load mem[F3] = 0xC0 to reg[1]
+C2 31 C4 ; store reg[1] = 0xC0 to mem[C4]
+C4 C0 00 ; halt
