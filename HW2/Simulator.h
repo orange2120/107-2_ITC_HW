@@ -44,7 +44,7 @@ class Simulator
     private:
       int myStrNCmp(const string &, const string &, unsigned);
       size_t myStrGetTok(const string &, string &, size_t, const char);
-      //bool myStr2UInt8(const string &, uint8_t &);
+      void getRST(size_t &, const string &, string &, uint8_t &, uint8_t &, uint8_t &);
 
       vector<uint8_t> programCounter;
       uint8_t regis[16] = {0};

@@ -21,13 +21,15 @@ int main(int argc, char* argv[])
         cerr << "[ERROR] Open file failed!" << endl;
         return 0;
     }
-    //sim.simulate();
-    /*if (!sim.storeMemory("output/asm_bonus"))
+    sim.printMemory();
+
+    sim.simulate();
+    if (!sim.storeMemory("output/asm_bonus"))
     {
         cerr << "[ERROR] Output file open failed" << endl;
         return 0;
     }
-    */
+    
     
     return 0;
 }

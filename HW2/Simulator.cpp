@@ -2,6 +2,7 @@
 #include <iostream>
 #include <fstream>
 #include <iomanip> 
+#include <cstdlib>
 using namespace std;
 
 Simulator::Simulator()
@@ -281,6 +282,8 @@ bool Simulator::loadAsm(const string path)
 
     n = input.size();
 
+    //cout << "n: " << n << endl;
+
     for (unsigned int i = 0; i < n; ++i)
     {
         string pch = "";
@@ -294,55 +297,115 @@ bool Simulator::loadAsm(const string path)
         
         if(myStrNCmp("lw", pch, 2) == 0)
         {
-            //myStrGetTok(input[i], pch , 1, ' ');
-            //r = myStr2Int(pch);
+            strN = myStrGetTok(input[i], pch , strN, ' ');
+            r = (uint8_t)strtoul(pch.c_str(), 0, 16);
+
+            strN = myStrGetTok(input[i], pch , strN, ' ');
+            xy = (uint8_t)strtoul(pch.c_str(), 0, 16);
+
+            memory[2 * i] = 0x10 | r;
+            memory[2 * i + 1] = xy;
         }
         else if (myStrNCmp("lb", pch, 2) == 0)
         {
             strN = myStrGetTok(input[i], pch , strN, ' ');
-            // TODO HEX string to uint8_t
-            //myStr2UInt8(pch, r);
-            cout << pch << hex << (uint16_t)(r & 0xFF) << endl;
+            r = (uint8_t)strtoul(pch.c_str(), 0, 16);
+
+            strN = myStrGetTok(input[i], pch , strN, ' ');
+            xy = (uint8_t)strtoul(pch.c_str(), 0, 16);
+
+            memory[2 * i] = 0x20 | r;
+            memory[2 * i + 1] = xy;
+
+            cout << "r:" << (uint16_t)(r & 0xFF) << ",xy:" <<(uint16_t)(xy & 0xFF) << endl;
         }
         else if (myStrNCmp("sw", pch, 2) == 0)
         {
+            strN = myStrGetTok(input[i], pch , strN, ' ');
+            r = (uint8_t)strtoul(pch.c_str(), 0, 16);
 
+            strN = myStrGetTok(input[i], pch , strN, ' ');
+            xy = (uint8_t)strtoul(pch.c_str(), 0, 16);
+
+            memory[2 * i] = 0x30 | r;
+            memory[2 * i + 1] = xy;
         }
         else if (myStrNCmp("mv", pch, 2) == 0)
         {
+            strN = myStrGetTok(input[i], pch , strN, ' ');
+            r = (uint8_t)strtoul(pch.c_str(), 0, 16);
 
+            strN = myStrGetTok(input[i], pch , strN, ' ');
+            s = (uint8_t)strtoul(pch.c_str(), 0, 16);
+
+            memory[2 * i] = 0x40;
+            memory[2 * i + 1] = (r << 4) | s;
         }
         else if (myStrNCmp("add", pch, 3) == 0)
         {
+            getRST(strN, input[i], pch, r, s, t);
 
+            memory[2 * i] = 0x50 | r;
+            memory[2 * i + 1] = (s << 4) | t;
         }
         else if (myStrNCmp("addf", pch, 4) == 0)
         {
+            getRST(strN, input[i], pch, r, s, t);
 
+            memory[2 * i] = 0x60 | r;
+            memory[2 * i + 1] = (s << 4) | t;
         }
         else if (myStrNCmp("or", pch, 2) == 0)
         {
+            getRST(strN, input[i], pch, r, s, t);
 
+            memory[2 * i] = 0x70 | r;
+            memory[2 * i + 1] = (s << 4) | t;
         }
         else if (myStrNCmp("and", pch, 3) == 0)
         {
+            getRST(strN, input[i], pch, r, s, t);
+
+            memory[2 * i] = 0x80 | r;
+            memory[2 * i + 1] = (s << 4) | t;
 
         }
         else if (myStrNCmp("xor", pch, 3) == 0)
         {
+            getRST(strN, input[i], pch, r, s, t);
+
+            memory[2 * i] = 0x90 | r;
+            memory[2 * i + 1] = (s << 4) | t;
 
         }
         else if (myStrNCmp("srl", pch, 3) == 0)
         {
+            strN = myStrGetTok(input[i], pch , strN, ' ');
+            strN = myStrGetTok(input[i], pch , strN, ' ');
+            r = (uint8_t)strtoul(pch.c_str(), 0, 16);
 
+            strN = myStrGetTok(input[i], pch , strN, ' ');
+            xy = (uint8_t)strtoul(pch.c_str(), 0, 16);
+
+            memory[2 * i] = 0xA0 | r;
+            memory[2 * i + 1] = xy;
         }
         else if (myStrNCmp("beq", pch, 3) == 0)
         {
+            strN = myStrGetTok(input[i], pch , strN, ' ');
+            strN = myStrGetTok(input[i], pch , strN, ' ');
+            r = (uint8_t)strtoul(pch.c_str(), 0, 16);
 
+            strN = myStrGetTok(input[i], pch , strN, ' ');
+            xy = (uint8_t)strtoul(pch.c_str(), 0, 16);
+
+            memory[2 * i] = 0xB0 | r;
+            memory[2 * i + 1] = xy;
         }
-        else if (myStrNCmp("halt", pch, 4) == 0)
+        else if (myStrNCmp("halt\r", pch, 4) == 0)
         {
-
+            memory[2 * i] = 0xC0;
+            memory[2 * i + 1] = 0x00;
         }
     }
 
@@ -376,23 +439,14 @@ size_t Simulator::myStrGetTok(const string& str, string& tok, size_t pos = 0, co
    return end;
 }
 
-/*
-bool Simulator::myStr2UInt8(const string& str, uint8_t& num)
+inline void Simulator::getRST(size_t &strN, const string &input,string &pch, uint8_t &r, uint8_t &s, uint8_t &t)
 {
-   num = 0;
-   size_t i = 0;
-   int sign = 1;
-   if (str[0] == '-') { sign = -1; i = 1; }
-   bool valid = false;
-   for (; i < str.size(); ++i) {
-      if (isdigit(str[i])) {
-         num *= 10;
-         num += int16_t(str[i] - '0');
-         valid = true;
-      }
-      else return false;
-   }
-   num *= sign;
-   return valid;
+    strN = myStrGetTok(input, pch , strN, ' ');
+    r = (uint8_t)strtoul(pch.c_str(), 0, 16);
+
+    strN = myStrGetTok(input, pch , strN, ' ');
+    s = (uint8_t)strtoul(pch.c_str(), 0, 16);
+
+    strN = myStrGetTok(input, pch , strN, ' ');
+    t = (uint8_t)strtoul(pch.c_str(), 0, 16);
 }
-*/
