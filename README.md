@@ -47,3 +47,10 @@ $ ./test <Image path>
 Machine Instruction Simulator
 
 ### Bonus: AssemblySimulator
+```
+$ make asmSim
+```
+
+## HW3 RSA Encryption
+
+### Bonus: Matrix multiplication
