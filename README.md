@@ -46,11 +46,23 @@ $ ./test <Image path>
 ### Programming Problem:  
 Machine Instruction Simulator
 
+### Test program (Run single input file)
+```
+$ make test
+$ ./test <Input file index>
+```
+`<Input file index>`: input1 -> `./test 1`
+
 ### Bonus: AssemblySimulator
 ```
 $ make asmSim
 ```
 
 ## HW3 RSA Encryption
+
+Encoding string to integer by ASCII code, and store 2 characters into 1 integer.  
+For example, encoding "AC", A→65 , C→67, let $m = 65 * 2^8 + 67$, we get $m = 16707$. 
+
+⚠️ Using "Exponentiation by Squaring" for decryption to avoid overflow. ⚠️  
 
 ### Bonus: Matrix multiplication

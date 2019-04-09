@@ -1,24 +1,24 @@
 CFLAGS = -O3 -Wall -std=c++11
 CFLAGS = -g -Wall -std=c++11
 
-cipher: cipher.o rsa_encrypt.o
+cipher: src/cipher.o src/rsa_encrypt.o
 	@echo "Compiling cipher..."
-	g++ -o $@ cipher.o rsa_encrypt.o $(CFLAGS)
+	g++ -o bin/$@ src/cipher.o src/rsa_encrypt.o $(CFLAGS)
 	@echo "Done."
 
-decipher: decipher.o rsa_encrypt.o
+decipher: src/decipher.o src/rsa_encrypt.o
 	@echo "Compiling decipher..."
-	g++ -o $@ decipher.o rsa_crypt.o $(CFLAGS)
+	g++ -o bin/$@ src/decipher.o src/rsa_encrypt.o $(CFLAGS)
 	@echo "Done."
 
-find: find.o rsa_encrypt.o
+find: src/find.o src/rsa_encrypt.o
 	@echo "Compiling find..."
-	g++ -o $@ find.o rsa_crypt.o $(CFLAGS)
+	g++ -o bin/$@ src/find.o src/rsa_encrypt.o $(CFLAGS)
 	@echo "Done."
 
-rsa_encrypt.o: rsa_encrypt.h rsa_encrypt.cpp
-	g++ -c rsa_encrypt.h rsa_encrypt.cpp $(CFLAGS)
+rsa_encrypt.o: src/rsa_encrypt.h src/rsa_encrypt.cpp
+	g++ -c src/rsa_encrypt.h src/rsa_encrypt.cpp $(CFLAGS)
 
 clean:
-	rm -f cipher decipher find *.o *.h.gch ./output/*
+	rm -f ./bin/* ./src/*.o ./src/*.h.gch ./output/*
 	@echo "Done."

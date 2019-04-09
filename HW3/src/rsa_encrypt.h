@@ -16,14 +16,21 @@ class RSAEncrypt
       bool readDecrypt(const string &, const string &);
       void decrypt();
       bool writeDecrypt(const string &);
-
-    private :
+      bool readFind(const string &);
+      bool solve_d();
+      bool writeFind(const string &);
+      
+    private:
       uint64_t myullPow(uint64_t, uint64_t);
+      uint64_t ExpBySq(uint64_t, uint64_t, uint64_t);
+      void extendedGCD(uint64_t, uint64_t , uint64_t &, uint64_t &, uint64_t &);
+      uint64_t extended_gcd(uint64_t , uint64_t );
 
       string plainText = "";
       uint64_t key_n = 0;
       uint64_t key_e = 0;
       uint64_t key_d = 0;
+      uint64_t phi = 0;
       vector<uint64_t> cipherText;
       vector<uint64_t> enCipherText;
 };

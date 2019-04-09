@@ -6,7 +6,7 @@ int main()
 {
     RSAEncrypt rsa;
 
-    if(!rsa.readDecrypt("./secret.txt", "./private_key.txt"))
+    if(!rsa.readDecrypt("./output/secret.txt", "./private_key.txt"))
     {
         cerr << "[ERROR] Open file failed!" << endl;
         return 0;
@@ -18,3 +18,4 @@ int main()
     }
     
     return 0;
+}
