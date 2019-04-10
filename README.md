@@ -61,7 +61,7 @@ $ make asmSim
 ## HW3 RSA Encryption
 
 Encoding string to integer by ASCII code, and store 2 characters into 1 integer.  
-For example, encoding "AC", A→65 , C→67, let $m = 65 * 2^8 + 67$, we get $m = 16707$. 
+For example, encoding "AC", A→65 , C→67, let m = 65 * 2<sup>8</sup> + 67, we get m = 16707.   
 
 ⚠️ Using "Exponentiation by Squaring" for decryption to avoid overflow. ⚠️  
 
