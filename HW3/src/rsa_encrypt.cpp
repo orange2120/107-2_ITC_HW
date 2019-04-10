@@ -10,6 +10,7 @@ bool RSAEncrypt::readEncrypt(const string &plainPath, const string &pubKeyPath)
 {
     ifstream pla;
     ifstream pKey;
+    string plain = "";
 
     pla.open(plainPath.c_str(), ifstream::in);
     pKey.open(pubKeyPath.c_str(), ifstream::in);
@@ -19,12 +20,8 @@ bool RSAEncrypt::readEncrypt(const string &plainPath, const string &pubKeyPath)
     if (!pKey.is_open())
         return false;
 
-    // get plain text content
-    getline(pla, plainText, '\n');
-
-    // IMPORTANT remove Line Feed(New Line) and Carriage Return symbol
-    plainText.erase(std::remove(plainText.begin(), plainText.end(), '\n'), plainText.end());
-    plainText.erase(std::remove(plainText.begin(), plainText.end(), '\r'), plainText.end());
+    while (getline(pla, plain, '\n'))
+        plainText.push_back(plain);
 
     // get N,e
     pKey >> key_n;
@@ -41,36 +38,41 @@ bool RSAEncrypt::readEncrypt(const string &plainPath, const string &pubKeyPath)
 void RSAEncrypt::encrypt()
 {
     uint64_t cip = 0;
-    uint32_t nPlainText = plainText.size();
+    uint32_t nPlainText;
 
-    cout << "Plain text:" << endl;
-    cout << plainText << '\n' << endl;
     //cout << "n^e: " << pow(key_n, key_e) << endl;
 
-    // odd
-    if (nPlainText % 2)
-        nPlainText--;
-
-    for (uint32_t i = 0; i < nPlainText - 1; i += 2)
+    for (uint32_t i = 0; i < plainText.size(); ++i)
     {
-        cip = (uint64_t)plainText[i] * 256 + (uint64_t)plainText[i + 1];
-        cip = myullPow(cip, key_e) % key_n;
-        cipherText.push_back(cip);
+        cout << "Plain text[" << plainText[i].size() << "]:" << endl;
+        cout << plainText[i] << '\n' << endl;
 
-        cout << setw(3) << (uint64_t)plainText[i] << " " << setw(3) << (uint64_t)plainText[i + 1] << " " << cip << endl;
+        nPlainText = plainText[i].size();
+        // odd
+        if (nPlainText % 2)
+            nPlainText--;
+
+        for (uint32_t j = 0; j < nPlainText - 1; j += 2)
+        {
+            //cout << "(i,j)=" << "(" << i << "," << j << ")" << endl;
+            cip = (uint64_t)plainText[i][j] * 256 + (uint64_t)plainText[i][j + 1];
+            cip = myullPow(cip, key_e) % key_n;
+            cipherText.push_back(cip);
+
+            cout << setw(3) << (uint64_t)plainText[i][j] << " " << setw(3) << (uint64_t)plainText[i][j + 1] << " " << cip << endl;
+        }
+
+        // handle odd case
+        if (plainText[i].size() % 2 != 0)
+        {
+            cip = (uint64_t)plainText.back().back() * 256;
+            cip = myullPow(cip, key_e) % key_n;
+            cipherText.push_back(cip);
+
+            cout << setw(3)  << (uint64_t)plainText.back().back() << " "  << cip << endl;
+        }
     }
-
-    // handle odd case
-    if (plainText.size() % 2 != 0)
-    {
-        cip = (uint64_t)plainText.back() * 256;
-        cip = myullPow(cip, key_e) % key_n;
-        cipherText.push_back(cip);
-
-        cout << setw(3)  << (uint64_t)plainText.back() << " "  << cip << endl;
-    }
-
-    plainText = "";
+    plainText.clear();
 }
 
 bool RSAEncrypt::writeEncrypt(const string &path)
@@ -82,7 +84,7 @@ bool RSAEncrypt::writeEncrypt(const string &path)
         return false;
 
     for (uint32_t i = 0; i < cipherText.size(); ++i)
-        ofs << to_string(cipherText[i]) << '\n';
+        ofs << to_string(cipherText[i]) + '\n';
 
     ofs.close();
     return true;
@@ -130,13 +132,13 @@ void RSAEncrypt::decrypt()
 
         cout << plain << " " << (plain >> 8) << " " << (plain & 0xFF) << endl;
 
-        plainText += (char)(plain >> 8);
+        decPlainText += (char)(plain >> 8);
 
         // check if there exists valid second character (handling odd string length)
         if ((plain & 0x00FF) == 0)
             continue;
         
-        plainText += (char)(plain & 0x00FF);
+        decPlainText += (char)(plain & 0x00FF);
     }
 
 }
@@ -149,13 +151,13 @@ bool RSAEncrypt::writeDecrypt(const string &path)
     if(!ofs.is_open())
         return false;
 
-    ofs << plainText;
+    ofs << decPlainText;
 
     ofs.close();
 
-    cout << plainText << endl;
+    cout << decPlainText << endl;
 
-    plainText = "";
+    decPlainText = "";
     return true;
 }
 
@@ -209,23 +211,23 @@ bool RSAEncrypt::writeFind(const string &path)
 }
 
 // Private member functions
-uint64_t RSAEncrypt::myullPow(uint64_t base, uint64_t exp)
+uint64_t RSAEncrypt::myullPow(uint64_t base, uint64_t exponent)
 {
     uint64_t result = 1ULL;
-    while( exp )
+    while (exponent)
     {
-        if ( exp & 1 )
+        if ( exponent & 1 )
         {
             result *= (uint64_t)base;
         }
-        exp >>= 1;
+        exponent >>= 1;
         base *= base;
     }
     return result;
 }
 
 // Modular Exponentiation (Power in Modular Arithmetic)
-uint64_t RSAEncrypt::ExpBySq(uint64_t base, uint64_t exponent, uint64_t mod)
+uint64_t RSAEncrypt::ExpBySq(uint64_t base, uint64_t exponent, const uint64_t &mod)
 {
     uint64_t r = 1;
     while(exponent > 0)

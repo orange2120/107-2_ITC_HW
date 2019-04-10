@@ -22,14 +22,15 @@ class RSAEncrypt
       
     private:
       uint64_t myullPow(uint64_t, uint64_t);
-      uint64_t ExpBySq(uint64_t, uint64_t, uint64_t);
+      uint64_t ExpBySq(uint64_t, uint64_t, const uint64_t &);
       int64_t modInverse(uint64_t, uint64_t);
 
-      string plainText = "";
       uint64_t key_n = 0;
       uint64_t key_e = 0;
       uint64_t key_d = 0;
       uint64_t phi = 0;
+      string decPlainText = "";
+      vector<string> plainText;
       vector<uint64_t> cipherText;
       vector<uint64_t> enCipherText;
 };

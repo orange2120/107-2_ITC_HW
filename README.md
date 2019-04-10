@@ -17,7 +17,7 @@ $ make clean
 
 ## HW1 Bitmap image
 
-### Programming Problem:  
+### Programming Problem
   Rotate a picture conterclockwise by 90 degree.  
 
 ### Bonus: PrewiitEdge Detector  
@@ -43,7 +43,7 @@ $ ./test <Image path>
 
 ## HW2 Machine Instruction Simulator
 
-### Programming Problem:  
+### Programming Problem
 Machine Instruction Simulator
 
 ### Test program (Run single input file)
@@ -60,6 +60,10 @@ $ make asmSim
 
 ## HW3 RSA Encryption
 
+### Programming Problem
+Implement RSA encryption on string.
+
+### Note
 Encoding string to integer by ASCII code, and store 2 characters into 1 integer.  
 For example, encoding "AC", A→65 , C→67, let m = 65 * 2<sup>8</sup> + 67, we get m = 16707.   
 
