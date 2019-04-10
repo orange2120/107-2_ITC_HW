@@ -82,7 +82,7 @@ bool RSAEncrypt::writeEncrypt(const string &path)
         return false;
 
     for (uint32_t i = 0; i < cipherText.size(); ++i)
-        ofs << to_string(cipherText[i])  + '\n';
+        ofs << to_string(cipherText[i]) << '\n';
 
     ofs.close();
     return true;
@@ -175,8 +175,9 @@ bool RSAEncrypt::readFind(const string &path)
     return true;
 }
 
-bool RSAEncrypt::solve_d()
+void RSAEncrypt::solve_d()
 {
+    /*
     uint64_t e = key_e % phi;
     for (uint64_t i = 1; i < phi; ++i)
     {
@@ -186,15 +187,11 @@ bool RSAEncrypt::solve_d()
             return true;
         }
     }
-    
-    /*uint64_t d;
-    uint64_t i, j;
-    extendedGCD(key_e, phi, i, j, d);
-    if (d == 1)
-        key_d = i;
     */
+    key_d = modInverse(key_e, phi);
+
     cout << "d: " << key_d << endl;
-    return false;
+
 }
 
 bool RSAEncrypt::writeFind(const string &path)
@@ -205,7 +202,7 @@ bool RSAEncrypt::writeFind(const string &path)
     if(!ofs.is_open())
         return false;
 
-    ofs << to_string(key_d) + '\n';
+    ofs << to_string(key_d);
 
     ofs.close();
     return true;
@@ -241,20 +238,17 @@ uint64_t RSAEncrypt::ExpBySq(uint64_t base, uint64_t exponent, uint64_t mod)
     return r;
 }
 
-void RSAEncrypt::extendedGCD(uint64_t a, uint64_t b, uint64_t& i, uint64_t& j, uint64_t& d)
+// modular inverse https://rosettacode.org/wiki/Modular_inverse
+int64_t RSAEncrypt::modInverse(uint64_t a, uint64_t b)
 {
-    int64_t i_ = 1, j_ = 0;
-    int64_t c = a;
-    
-    i = 0, j = 1;
-    d = b;
-    
-    while (true)
-    {
-        uint64_t q = c / d, r = c % d, t;
-        if (r == 0) break;
-        c = d; d = r;
-        t = i_; i_ = i; i = t - q * i;
-        t = j_; j_ = j; j = t - q * j;
-    }
+	uint64_t b0 = b, t, q;
+	int64_t x0 = 0, x1 = 1;
+	if (b == 1) return 1;
+	while (a > 1) {
+		q = a / b;
+		t = b, b = a % b, a = t;
+		t = x0, x0 = x1 - q * x0, x1 = t;
+	}
+	if (x1 < 0) x1 += b0;
+	return x1;
 }
