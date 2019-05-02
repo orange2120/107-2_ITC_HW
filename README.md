@@ -70,3 +70,8 @@ For example, encoding "AC", A→65 , C→67, let m = 65 * 2<sup>8</sup> + 67, we
 ⚠️ Using "Exponentiation by Squaring" for decryption to avoid overflow. ⚠️  
 
 ### Bonus: Matrix multiplication
+
+## HW4 Shortest Path
+
+### Programming Problem
+Use dynamic programming to find the shortest path from the upper-left node to the lower-right node with moves in all four directions.
