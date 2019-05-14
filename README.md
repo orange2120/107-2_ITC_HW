@@ -1,6 +1,6 @@
 # 107-2 Introduction to Computer Homework
 
-2019 Spring , Introduction to Computer, EE 1003 02
+2019 Spring , Introduction to Computer, EE 1003 02 (Prof. Yu class)
 
 ## Usage
 
@@ -67,7 +67,7 @@ Implement RSA encryption on string.
 Encoding string to integer by ASCII code, and store 2 characters into 1 integer.  
 For example, encoding "AC", A→65 , C→67, let m = 65 * 2<sup>8</sup> + 67, we get m = 16707.   
 
-⚠️ Using "Exponentiation by Squaring" for decryption to avoid overflow. ⚠️  
+⚠️ Using "Modular Exponentiation" for decryption to avoid overflow. ⚠️  
 
 ### Bonus: Matrix multiplication
 
