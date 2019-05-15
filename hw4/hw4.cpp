@@ -47,23 +47,24 @@ bool isInBoundary(const int32_t &y, const int32_t &x)
     return (y >= 0 && y <= n && x >= 0 && x <= m);
 }
 
-inline double grid(const int32_t &y, const int32_t &x, const int8_t &dy, const int8_t &dx)
+// extract weight information from h,v matrix
+inline double weight(const int32_t &y, const int32_t &x, const int8_t &dy, const int8_t &dx)
 {
     // Left
     if(dx == -1 && dy == 0)
-        return h[y][x];
+        return h[y][x - 1];
 
     // Right 
     else if (dx == 1 && dy == 0)
-        return h[y][x - 1];
+        return h[y][x];
 
-    // U
+    // Up
     else if (dx == 0 && dy == -1)
-        return v[y][x];
-
-    // D
-    else if (dx == 0 && dy == 1)
         return v[y - 1][x];
+
+    // Down
+    else if (dx == 0 && dy == 1)
+        return v[y][x];
 
     else 
         return 0.0;
@@ -158,6 +159,27 @@ void printDist()
     }
 }
 
+inline void printDir(const uint8_t &d)
+{
+    switch (d)
+            {
+            case 0:
+                cout << "l" << endl;
+                break;
+            case 1:
+                cout << "d" << endl;
+                break;
+            case 2:
+                cout << "r" << endl;
+                break;
+            case 3:
+                cout << "u" << endl;
+                break;
+            default:
+                break;
+            }
+}
+
 void findShortest()
 {
     dist = new double*[n + 1];
@@ -171,7 +193,7 @@ void findShortest()
     set<cell> st;
     st.insert(cell(0, 0, 0.0));
 
-    // initialize distance matrix
+    // initialize distance matrix with distance infinity
     for (int32_t i = 0; i < n + 1; ++i)
         for (int32_t j = 0; j < m + 1; ++j)
             dist[i][j] = __DBL_MAX__;
@@ -188,22 +210,30 @@ void findShortest()
 
             int32_t x = u.x + dx[i];
             int32_t y = u.y + dy[i];
+
+            
         
             if (!isInBoundary(y, x))
                 continue;
 
-            cout << "G[" << x << "," << y << "] = " << grid(y, x, dy[i], dx[i]) << endl;
+            cout << "MOV->[" << x << ", " << y << "]" << endl;
 
-            if (dist[y][x] > dist[u.y][u.x] + grid(y, x, dy[i], dx[i]))
+            if (dist[y][x] > dist[u.y][u.x] + weight(u.y, u.x, dy[i], dx[i]))
             {
+                printDir(i);
+
                 if (dist[y][x] != __DBL_MAX__)
                     st.erase(st.find(cell(y, x, dist[y][x])));
 
-                dist[y][x] = dist[u.y][u.x] + grid(y, x, dy[i], dx[i]);
+                dist[y][x] = dist[u.y][u.x] + weight(u.y, u.x, dy[i], dx[i]);
                 st.insert(cell(y, x, dist[y][x]));
+                cout << "ADD[" << x << "," << y << "] = " << weight(u.y, u.x, dy[i], dx[i]) << endl;
+                cout << "DIST["<< x << ", " << y << "] = " << dist[y][x] << endl;
             }
         }
     }
+
+    cout << dist[n][m] << endl;
 }
 
 int main()
