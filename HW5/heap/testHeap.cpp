@@ -1,0 +1,55 @@
+#include <iostream>
+#include <fstream>
+
+using namespace std;
+
+#include "heap.h"
+
+#define INPUT_FILE_PATH "./heap/input2.txt"
+
+int main()
+{
+
+    Heap<int, char> heap;
+
+    ifstream file(INPUT_FILE_PATH);
+    if (!file.is_open())
+    {
+        cerr << "[ERROR] Open input file failed!" << endl;
+        return 0;
+    }
+
+    int opNum;
+    int heapNum;
+    file >> opNum >> heapNum;
+    int *key = new int[heapNum];
+    char *element = new char[heapNum];
+
+    for (int i=0; i<heapNum; ++i) {
+        file >> key[i];
+        file >> element[i];
+    }
+    int index = 0;
+    for (int i=0; i<opNum; ++i) {
+        int op;
+        file >> op;
+        if (op == 1) {
+            heap.push(key[index], element[index]);
+            ++index;
+        }
+        else 
+            heap.pop();
+    }
+
+    file.close();
+    delete []element;
+    delete []key;
+
+    heap.printArray();
+
+    heap.printByPopping();
+
+    return 0;
+}
+
+

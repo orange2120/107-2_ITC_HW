@@ -75,3 +75,14 @@ For example, encoding "AC", A→65 , C→67, let m = 65 * 2<sup>8</sup> + 67, we
 
 ### Programming Problem
 Use dynamic programming to find the shortest path from the upper-left node to the lower-right node with moves in all four directions.
+
+Implement Dijkstra's algorithm
+
+## HW5 Heap
+
+### Programming Problem
+Implement a min heap
+
+### Bonus: 
+Givena preprocessed article which is lowercase and non-punctuation.
+Find the k most frequent words.

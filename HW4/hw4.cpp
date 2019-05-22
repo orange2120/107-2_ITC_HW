@@ -112,6 +112,11 @@ void release()
     delete []real_v;
     delete []real_h;
 
+    for (int32_t i = 0; i < n + 1; ++i)
+    {
+        delete dist[i];
+    }
+
     delete[] dist;
 }
 
@@ -164,22 +169,23 @@ inline void printDir(const uint8_t &d)
     switch (d)
             {
             case 0:
-                cout << "l" << endl;
+                cout << "l";
                 break;
             case 1:
-                cout << "d" << endl;
+                cout << "d";
                 break;
             case 2:
-                cout << "r" << endl;
+                cout << "r";
                 break;
             case 3:
-                cout << "u" << endl;
+                cout << "u";
                 break;
             default:
                 break;
             }
 }
 
+// Dijkstra's algorithm
 void findShortest()
 {
     dist = new double*[n + 1];
@@ -211,29 +217,32 @@ void findShortest()
             int32_t x = u.x + dx[i];
             int32_t y = u.y + dy[i];
 
-            
-        
             if (!isInBoundary(y, x))
                 continue;
 
-            cout << "MOV->[" << x << ", " << y << "]" << endl;
+            //cout << "MOV->[" << x << ", " << y << "]" << endl;
 
             if (dist[y][x] > dist[u.y][u.x] + weight(u.y, u.x, dy[i], dx[i]))
             {
                 printDir(i);
 
-                if (dist[y][x] != __DBL_MAX__)
-                    st.erase(st.find(cell(y, x, dist[y][x])));
+                //if (dist[y][x] != __DBL_MAX__)
+                //    st.erase(st.find(cell(y, x, dist[y][x])));
+                if (dist[y][x] != __DBL_MAX__) {
+                    auto res = st.find(cell(y, x, dist[y][x]));
+                    if (res != st.end())
+                        st.erase(res);
+                }
 
                 dist[y][x] = dist[u.y][u.x] + weight(u.y, u.x, dy[i], dx[i]);
                 st.insert(cell(y, x, dist[y][x]));
-                cout << "ADD[" << x << "," << y << "] = " << weight(u.y, u.x, dy[i], dx[i]) << endl;
-                cout << "DIST["<< x << ", " << y << "] = " << dist[y][x] << endl;
+                //cout << "ADD[" << x << "," << y << "] = " << weight(u.y, u.x, dy[i], dx[i]) << endl;
+                //cout << "DIST["<< x << ", " << y << "] = " << dist[y][x] << endl;
             }
         }
     }
 
-    cout << dist[n][m] << endl;
+    cout << endl << dist[n][m] << endl;
 }
 
 int main()
