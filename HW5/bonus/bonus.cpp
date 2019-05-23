@@ -3,7 +3,6 @@
 #include <vector>
 #include <unordered_map>
 #include <algorithm>
-//#include "../heap/heap.h"
 using namespace std;
 
 #define FILE_PATH "./bonus/bonus.txt"
@@ -24,14 +23,10 @@ class FreqCounter
             return false;
 
         ifs >> k;
-
         cout << "K = " << k << endl;
 
         while (ifs >> str)
-        {
             _mp[str]++;
-        }
-        //
 
         cout << "MP.S = " << _mp.size() << endl;
         ifs.close();
@@ -44,9 +39,7 @@ class FreqCounter
         sort(v.begin(), v.end(), compByVal);
 
         for (uint32_t i = 0; i < k; ++i)
-        {
             cout << v[i].first << " " << v[i].second << endl;
-        }
         cout << endl;
     }
 

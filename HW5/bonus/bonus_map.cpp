@@ -25,13 +25,10 @@ class FreqCounter
             return false;
 
         ifs >> k;
-
         cout << "K = " << k << endl;
 
         while (ifs >> str)
-        {
             ++_mp[str];
-        }
 
         cout << "MP.S = " << _mp.size() << endl;
         ifs.close();
@@ -44,18 +41,14 @@ class FreqCounter
         sort(v.begin(), v.end(), compByVal);
 
         for (uint32_t i = 0; i < k; ++i)
-        {
             cout << v[i].first << " " << v[i].second << endl;
-        }
         cout << endl;
     }
 
     void printMap() const
     {
         for (WordsMap::const_iterator it = _mp.begin(); it != _mp.end(); ++it)
-        {
             cout << "[" << it->first << "] = " << it->second << endl;
-        }
     }
 
   private:

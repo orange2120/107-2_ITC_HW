@@ -86,3 +86,8 @@ Implement a min heap
 ### Bonus: 
 Givena preprocessed article which is lowercase and non-punctuation.
 Find the k most frequent words.
+
+## HW6 Snake AI
+
+### Programming Problem
+Implement an artificial intelligence agent to compete with each other!

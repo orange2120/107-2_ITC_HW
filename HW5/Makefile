@@ -17,5 +17,5 @@ bonus_map: bonus/bonus_map.cpp
 	@echo "Done."
 
 clean:
-	rm -f bonus/bonus testHeap heap/*.o heap/*.h.gch
+	rm -f bonus/bonus bonus/bonus_map testHeap heap/*.o heap/*.h.gch
 	@echo "Done."
